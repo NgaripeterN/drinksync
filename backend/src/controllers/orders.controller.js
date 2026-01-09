@@ -221,7 +221,7 @@ exports.getOrderHistory = async (req, res) => {
 
         for (let i = 0; i < orders.length; i++) {
             const orderItemsResult = await client.query(
-                'SELECT oi.quantity, oi.price_at_order, d.name, d.image_url FROM order_items oi JOIN drinks d ON oi.drink_id = d.id WHERE oi.order_id = $1',
+                'SELECT oi.quantity, oi.price_at_order, d.name, d.image FROM order_items oi JOIN drinks d ON oi.drink_id = d.id WHERE oi.order_id = $1',
                 [orders[i].id]
             );
             orders[i].items = orderItemsResult.rows;

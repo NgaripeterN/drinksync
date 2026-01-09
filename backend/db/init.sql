@@ -33,14 +33,15 @@ INSERT INTO branches (name, location) VALUES
 CREATE TABLE drinks (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) UNIQUE NOT NULL,
-    price DECIMAL(10, 2) NOT NULL
+    price DECIMAL(10, 2) NOT NULL,
+    image VARCHAR(255)
 );
 
 -- Insert initial drink data
-INSERT INTO drinks (name, price) VALUES
-('Coke', 70.00),
-('Fanta', 70.00),
-('Sprite', 70.00);
+INSERT INTO drinks (name, price, image) VALUES
+('Coke', 70.00, '/images/coke.jpg'),
+('Fanta', 70.00, '/images/Fanta-Orange.jpg'),
+('Sprite', 70.00, '/images/sprite.jpg');
 
 -- Create Inventory table
 CREATE TABLE inventory (

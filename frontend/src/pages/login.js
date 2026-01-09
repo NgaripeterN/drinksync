@@ -2,13 +2,14 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import axios from "axios";
-import { FaEnvelope, FaLock } from "react-icons/fa";
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const router = useRouter();
   const { theme } = useTheme();
@@ -72,14 +73,34 @@ export default function Login() {
             <div className="relative">
               <FaLock className={`absolute top-1/2 left-3 -translate-y-1/2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`w-full rounded-lg border pl-10 pr-3 py-2 focus:outline-none focus:ring-2 transition ${isDark ? 'bg-gray-800/70 border-gray-700 text-gray-200 focus:ring-emerald-400' : 'bg-gray-200/70 border-gray-300 text-gray-800 focus:ring-emerald-500'}`}
+                className={`w-full rounded-lg border pl-10 pr-10 py-2 focus:outline-none focus:ring-2 transition ${isDark ? 'bg-gray-800/70 border-gray-700 text-gray-200 focus:ring-emerald-400' : 'bg-gray-200/70 border-gray-300 text-gray-800 focus:ring-emerald-500'}`}
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
           </div>
+
+
+          <div className="flex items-center justify-end">
+          <a
+            href="/forgot-password"
+            className={`text-sm ${isDark ? 'text-emerald-300 hover:text-emerald-400' : 'text-emerald-500 hover:text-emerald-600'} transition`}
+          >
+            Forgot Password?
+          </a>
+        </div>
+
+
+
 
           {error && (
             <p className="text-red-500 text-sm">{error}</p>
