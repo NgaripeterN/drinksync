@@ -107,7 +107,7 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2 }}
-            className="relative lg:block hidden"
+            className="relative block mt-12 lg:mt-0"
           >
             <div className={`absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-emerald-500/20 rounded-[3rem] blur-3xl`} />
             <div className="relative rounded-[3rem] overflow-hidden shadow-2xl border-8 border-gray-100 dark:border-gray-800 transform rotate-3 hover:rotate-0 transition-transform duration-700">
@@ -118,7 +118,7 @@ export default function Home() {
             <motion.div 
               animate={{ y: [0, -20, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className={`absolute -top-8 -right-8 p-6 rounded-3xl shadow-2xl border max-w-[200px] ${
+              className={`absolute -top-4 -right-4 lg:-top-8 lg:-right-8 p-4 lg:p-6 rounded-3xl shadow-2xl border max-w-[160px] lg:max-w-[200px] ${
                 isDark ? 'bg-gray-800 border-gray-700 shadow-indigo-500/10' : 'bg-white border-gray-100 shadow-xl'
               }`}
             >
