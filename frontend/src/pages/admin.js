@@ -3,15 +3,13 @@ import { useRouter } from 'next/router';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import {
-    PlusCircleIcon,
     ArrowPathIcon,
-    BuildingStorefrontIcon,
-    ChevronRightIcon,
-    BeakerIcon,
-    ArchiveBoxIcon,
     ExclamationTriangleIcon,
     CheckCircleIcon,
+    BuildingStorefrontIcon,
+    ArchiveBoxIcon,
 } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
 
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -28,20 +26,9 @@ export default function AdminDashboard() {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
 
-    const [branches, setBranches] = useState([]);
-    const [drinks, setDrinks] = useState([]);
-
-    const [selectedBranch, setSelectedBranch] = useState('');
-    const [selectedDrink, setSelectedDrink] = useState('');
-    const [quantity, setQuantity] = useState('');
-    const [isRestocking, setIsRestocking] = useState(false);
-
-    const [selectedHqDrink, setSelectedHqDrink] = useState('');
-    const [hqQuantity, setHqQuantity] = useState('');
-    const [isAddingStock, setIsAddingStock] = useState(false);
-
-    const [message, setMessage] = useState('');
-    const [error, setError] = useState('');
+    const [inventory, setInventory] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         if (!authLoading && (!isAuthenticated || !isAdmin)) {
@@ -49,112 +36,28 @@ export default function AdminDashboard() {
             return;
         }
 
-        const fetchAdminData = async () => {
+        const fetchDashboardData = async () => {
             if (!isAuthenticated || !isAdmin) return;
 
             try {
                 const token = localStorage.getItem('token');
                 const headers = { Authorization: `Bearer ${token}` };
 
-                const res = await axios.get(
-                    `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/dashboard`,
+                const invRes = await axios.get(
+                    `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/inventory`,
                     { headers }
                 );
-                
-                // Filter out 'Headquarters' from the branches list for the restock form
-                const filteredBranches = res.data.branches.filter(branch => branch.name !== 'Headquarters');
-                setBranches(filteredBranches);
-                setDrinks(res.data.drinks);
+                setInventory(invRes.data);
 
             } catch (err) {
-                console.error('Admin fetch error:', err.response?.data || err.message);
-                setError('Failed to load initial admin data. Please refresh the page.');
+                toast.error('Failed to load dashboard data.');
+            } finally {
+                setLoading(false);
             }
         };
 
-        fetchAdminData();
+        fetchDashboardData();
     }, [isAuthenticated, isAdmin, authLoading, router]);
-    
-    const clearMessages = () => {
-        setMessage('');
-        setError('');
-    };
-
-    const handleAddStock = async (e) => {
-        e.preventDefault();
-        clearMessages();
-        
-        if (!selectedHqDrink || !hqQuantity) {
-            setError('Please select a drink and specify the quantity.');
-            return;
-        }
-        if (parseInt(hqQuantity) <= 0) {
-            setError('Quantity must be a positive number.');
-            return;
-        }
-        
-        setIsAddingStock(true);
-        try {
-            const token = localStorage.getItem('token');
-            await axios.post(
-                `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/add-stock`,
-                {
-                    drink_id: parseInt(selectedHqDrink),
-                    quantity: parseInt(hqQuantity),
-                },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            setMessage(`Successfully added ${hqQuantity} units of ${drinks.find(d => d.id == selectedHqDrink)?.name} to Headquarters.`);
-            setHqQuantity('');
-            setSelectedHqDrink('');
-        } catch (err) {
-            console.error('Add stock error:', err.response?.data || err.message);
-            setError(err.response?.data?.message || 'Failed to add stock to Headquarters.');
-        } finally {
-            setIsAddingStock(false);
-        }
-    };
-
-    const handleRestock = async (e) => {
-        e.preventDefault();
-        clearMessages();
-
-        if (!selectedBranch || !selectedDrink || !quantity) {
-            setError('Please select a branch, a drink, and specify the quantity.');
-            return;
-        }
-        if (parseInt(quantity) <= 0) {
-            setError('Quantity must be a positive number.');
-            return;
-        }
-
-        setIsRestocking(true);
-        try {
-            const token = localStorage.getItem('token');
-            await axios.post(
-                `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/restock`,
-                {
-                    branch_id: parseInt(selectedBranch),
-                    drink_id: parseInt(selectedDrink),
-                    quantity: parseInt(quantity),
-                },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            const branchName = branches.find(b => b.id == selectedBranch)?.name;
-            const drinkName = drinks.find(d => d.id == selectedDrink)?.name;
-            setMessage(`Successfully restocked ${branchName} with ${quantity} units of ${drinkName}.`);
-            setQuantity('');
-            setSelectedBranch('');
-            setSelectedDrink('');
-        } catch (err) {
-            console.error('Restock error:', err.response?.data || err.message);
-            setError(err.response?.data?.message || 'Failed to restock the branch.');
-        } finally {
-            setIsRestocking(false);
-        }
-    };
 
     if (authLoading || !isAuthenticated || !isAdmin) {
         return (
@@ -164,167 +67,208 @@ export default function AdminDashboard() {
         );
     }
 
-    // Common class for select elements to handle placeholder color
-    const selectClasses = (value) => 
-        `w-full rounded-lg border py-3 pl-11 pr-4 text-base transition ${
-            !value ? (isDark ? 'text-gray-400' : 'text-gray-500') : (isDark ? 'text-white' : 'text-gray-900')
-        } ${isDark 
-            ? 'border-slate-600 bg-slate-700 focus:border-indigo-500 focus:ring-indigo-500' 
-            : 'border-slate-300 bg-white focus:border-indigo-500 focus:ring-indigo-500'
-        }`;
+    const lowStockItems = inventory.filter(item => item.stock < 50);
+    const criticalItems = inventory.filter(item => item.stock <= 10);
+    const healthyItems = inventory.filter(item => item.stock >= 50);
+
+    const filteredInventory = inventory.filter(item =>
+        item.branch_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.drink_name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const groupedInventory = filteredInventory.reduce((acc, item) => {
+        if (!acc[item.branch_name]) {
+            acc[item.branch_name] = [];
+        }
+        acc[item.branch_name].push(item);
+        return acc;
+    }, {});
+
+    const sortedBranches = Object.entries(groupedInventory).sort(([a], [b]) => {
+        if (a === 'Headquarters') return -1;
+        if (b === 'Headquarters') return 1;
+        return a.localeCompare(b);
+    });
+
+    const getStockColor = (stock) => {
+        if (stock <= 10) return 'text-red-500 bg-red-500';
+        if (stock < 50) return 'text-yellow-500 bg-yellow-500';
+        return 'text-green-500 bg-green-500';
+    };
+
+    const getStockStatus = (stock) => {
+        if (stock <= 10) return 'Critical';
+        if (stock < 50) return 'Low Stock';
+        return 'Healthy';
+    };
 
     return (
         <AdminLayout>
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                    <h1 className={`text-3xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        Stock Management
-                    </h1>
-                    <p className={`mt-2 text-lg ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>
-                        Add new inventory to the Headquarters or distribute stock to regional branches.
-                    </p>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <h1 className={`text-3xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                Admin Dashboard
+                            </h1>
+                            <p className={`mt-2 text-lg ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>
+                                Overview of DrinkSync operations and inventory.
+                            </p>
+                        </div>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Search branch or drink..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className={`w-full md:w-80 px-4 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                                    isDark 
+                                    ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-500' 
+                                    : 'bg-white border-slate-200 text-gray-900 placeholder-gray-400'
+                                }`}
+                            />
+                        </div>
+                    </div>
                 </motion.div>
-
-                {/* --- ALERTS --- */}
-                {message && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-6 flex items-start gap-3 rounded-lg bg-green-50 dark:bg-green-900/20 p-4 border border-green-200 dark:border-green-800"
-                    >
-                        <CheckCircleIcon className="h-6 w-6 text-green-500 dark:text-green-400" />
-                        <p className="font-medium text-green-900 dark:text-green-300">{message}</p>
-                    </motion.div>
-                )}
-                {error && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-6 flex items-start gap-3 rounded-lg bg-red-50 dark:bg-red-900/20 p-4 border border-red-200 dark:border-red-800"
-                    >
-                        <ExclamationTriangleIcon className="h-6 w-6 text-red-500 dark:text-red-400" />
-                        <p className={`font-medium ${isDark ? 'text-red-300' : 'text-red-900'}`}>{error}</p>
-                    </motion.div>
-                )}
                 
-                <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-2">
-                    {/* --- ADD STOCK TO HQ --- */}
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                        className={`overflow-hidden rounded-xl border ${isDark ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-white'}`}
-                    >
-                        <div className={`p-6 border-b ${isDark ? 'border-slate-700 bg-slate-900/50' : 'border-slate-200 bg-slate-50'}`}>
-                            <h2 className={`flex items-center gap-3 text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                                <ArchiveBoxIcon className="h-7 w-7 text-indigo-500" />
-                                Add to Headquarters
-                            </h2>
-                        </div>
-                        <form onSubmit={handleAddStock} className="p-6 space-y-5">
-                            <div className="relative">
-                                <BeakerIcon className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-gray-500" />
-                                                                    <select
-                                                                        className={selectClasses(selectedHqDrink)}
-                                                                        value={selectedHqDrink}
-                                                                        onChange={(e) => setSelectedHqDrink(e.target.value)}
-                                                                    >
-                                                                        <option value="" disabled hidden>Select a drink</option>
-                                                                    
-                                                                        {drinks.map(drink => (
-                                                                            <option key={drink.id} value={drink.id}>{drink.name}</option>
-                                                                        ))}                                </select>
-                            </div>
-                            <div className="relative">
-                                <ChevronRightIcon className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-gray-500" />
-                                <input
-                                    type="number"
-                                    min="1"
-                                    className={`w-full rounded-lg border py-3 pl-11 pr-4 text-base transition ${isDark ? 'placeholder-gray-400 border-slate-600 bg-slate-700 text-white focus:border-indigo-500 focus:ring-indigo-500' : 'placeholder-gray-500 border-slate-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-indigo-500'}`}
-                                    placeholder="Quantity"
-                                    value={hqQuantity}
-                                    onChange={(e) => setHqQuantity(e.target.value)}
-                                />
-                            </div>
-                            <motion.button
-                                type="submit"
-                                disabled={isAddingStock}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+                {loading ? (
+                     <div className="mt-10 flex justify-center">
+                        <Spinner />
+                     </div>
+                ) : (
+                    <div className="mt-8 space-y-8">
+                        {/* Summary Cards */}
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1 }}
+                                className={`p-6 rounded-2xl shadow-sm border ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}
                             >
-                                {isAddingStock ? <Spinner /> : <PlusCircleIcon className="h-6 w-6" />}
-                                {isAddingStock ? 'Adding Stock...' : 'Add Stock to HQ'}
-                            </motion.button>
-                        </form>
-                    </motion.div>
-                    
-                    {/* --- RESTOCK BRANCH --- */}
-                    <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                        className={`overflow-hidden rounded-xl border ${isDark ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-white'}`}
-                    >
-                        <div className={`p-6 border-b ${isDark ? 'border-slate-700 bg-slate-900/50' : 'border-slate-200 bg-slate-50'}`}>
-                            <h2 className={`flex items-center gap-3 text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                                <BuildingStorefrontIcon className="h-7 w-7 text-teal-500" />
-                                Restock a Branch
-                            </h2>
-                        </div>
-                        <form onSubmit={handleRestock} className="p-6 space-y-5">
-                             <div className="relative">
-                                <BuildingStorefrontIcon className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-gray-500" />
-                                <select
-                                    className={selectClasses(selectedBranch)}
-                                    value={selectedBranch}
-                                    onChange={(e) => setSelectedBranch(e.target.value)}
-                                >
-                                    <option value="" disabled hidden>Select a branch</option>
-                                    
-                                    {branches.map(branch => (
-                                        <option key={branch.id} value={branch.id}>{branch.name} ({branch.location})</option>
-                                    ))}
-                                </select>
-                            </div>
-                             <div className="relative">
-                                <BeakerIcon className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-gray-500" />
-                                <select
-                                    className={selectClasses(selectedDrink)}
-                                    value={selectedDrink}
-                                    onChange={(e) => setSelectedDrink(e.target.value)}
-                                >
-                                    <option value="" disabled hidden>Select a drink</option>
-                                    
-                                    {drinks.map(drink => (
-                                        <option key={drink.id} value={drink.id}>{drink.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                             <div className="relative">
-                                <ChevronRightIcon className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-gray-500" />
-                                <input
-                                    type="number"
-                                    min="1"
-                                    className={`w-full rounded-lg border py-3 pl-11 pr-4 text-base transition ${isDark ? 'placeholder-gray-400 border-slate-600 bg-slate-700 text-white focus:border-teal-500 focus:ring-teal-500' : 'placeholder-gray-500 border-slate-300 bg-white text-gray-900 focus:border-teal-500 focus:ring-teal-500'}`}
-                                    placeholder="Quantity to Transfer"
-                                    value={quantity}
-                                    onChange={(e) => setQuantity(e.target.value)}
-                                />
-                            </div>
-                            <motion.button
-                                type="submit"
-                                disabled={isRestocking}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="flex w-full items-center justify-center gap-2 rounded-lg bg-teal-600 px-4 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-teal-500 disabled:cursor-not-allowed disabled:opacity-60"
+                                <div className="flex items-center gap-4">
+                                    <div className={`p-4 rounded-xl bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400`}>
+                                        <ExclamationTriangleIcon className="h-8 w-8" />
+                                    </div>
+                                    <div>
+                                        <p className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Critical Items</p>
+                                        <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{criticalItems.length}</p>
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                                className={`p-6 rounded-2xl shadow-sm border ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}
                             >
-                                {isRestocking ? <Spinner /> : <PlusCircleIcon className="h-6 w-6" />}
-                                {isRestocking ? 'Restocking...' : 'Restock Branch'}
-                            </motion.button>
-                        </form>
-                    </motion.div>
-                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className={`p-4 rounded-xl bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400`}>
+                                        <ExclamationTriangleIcon className="h-8 w-8" />
+                                    </div>
+                                    <div>
+                                        <p className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Low Stock</p>
+                                        <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{lowStockItems.length}</p>
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 }}
+                                className={`p-6 rounded-2xl shadow-sm border ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className={`p-4 rounded-xl bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400`}>
+                                        <CheckCircleIcon className="h-8 w-8" />
+                                    </div>
+                                    <div>
+                                        <p className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Healthy Stock</p>
+                                        <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{healthyItems.length}</p>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </div>
+
+                        {/* Inventory Grouped by Branch */}
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                            {sortedBranches.length > 0 ? (
+                                sortedBranches.map(([branch, items], branchIdx) => (
+                                    <motion.div
+                                        key={branch}
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ duration: 0.4, delay: 0.1 * branchIdx }}
+                                        className={`rounded-2xl border overflow-hidden shadow-sm ${
+                                            isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
+                                        }`}
+                                    >
+                                        <div className={`px-6 py-4 border-b flex items-center justify-between ${
+                                            isDark ? 'bg-slate-900/50 border-slate-700' : 'bg-slate-50 border-slate-200'
+                                        }`}>
+                                            <h3 className={`text-lg font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                                <BuildingStorefrontIcon className="h-5 w-5 text-blue-500" />
+                                                {branch}
+                                            </h3>
+                                            <span className={`text-xs font-semibold px-2 py-1 rounded-md ${
+                                                isDark ? 'bg-slate-700 text-slate-300' : 'bg-blue-100 text-blue-700'
+                                            }`}>
+                                                {items.length} Products
+                                            </span>
+                                        </div>
+                                        <div className="p-6 space-y-6">
+                                            {items.map((item, itemIdx) => {
+                                                const stockPercentage = Math.min((item.stock / 1000) * 100, 100);
+                                                const status = getStockStatus(item.stock);
+                                                const colorClass = getStockColor(item.stock);
+                                                
+                                                return (
+                                                    <div key={itemIdx} className="space-y-2">
+                                                        <div className="flex justify-between items-end">
+                                                            <div>
+                                                                <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                                                    {item.drink_name}
+                                                                </p>
+                                                                <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                                                                    Stock Level: <span className="font-mono">{item.stock}</span> units
+                                                                </p>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded ${
+                                                                    status === 'Critical' ? 'bg-red-100 text-red-700' :
+                                                                    status === 'Low Stock' ? 'bg-yellow-100 text-yellow-700' :
+                                                                    'bg-green-100 text-green-700'
+                                                                }`}>
+                                                                    {status}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? 'bg-slate-700' : 'bg-slate-100'}`}>
+                                                            <motion.div 
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${stockPercentage}%` }}
+                                                                transition={{ duration: 1, ease: "easeOut" }}
+                                                                className={`h-full rounded-full ${colorClass.split(' ')[1]}`}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </motion.div>
+                                ))
+                            ) : (
+                                <div className={`col-span-full p-12 text-center rounded-2xl border-2 border-dashed ${
+                                    isDark ? 'border-slate-700 text-slate-500' : 'border-slate-200 text-gray-400'
+                                }`}>
+                                    <ArchiveBoxIcon className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                                    <p className="text-lg">No matching inventory items found.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         </AdminLayout>
     );

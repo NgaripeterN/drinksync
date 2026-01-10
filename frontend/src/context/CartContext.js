@@ -72,6 +72,21 @@ export const CartProvider = ({ children }) => {
     setBranchIdState(null);
   };
   
+
+  const updateCartQuantity = (drinkId, quantity) => {
+    const newQuantity = parseInt(quantity, 10);
+
+    if (isNaN(newQuantity) || newQuantity <= 0) {
+      removeFromCart(drinkId, true); // Remove completely if quantity is invalid or zero
+      return;
+    }
+
+    setCart((prevCart) => ({
+      ...prevCart,
+      [drinkId]: newQuantity,
+    }));
+  };
+
   const getCartTotal = (drinks) => {
     if (!drinks || drinks.length === 0) return 0;
     return Object.entries(cart).reduce((total, [drinkId, quantity]) => {
@@ -81,7 +96,7 @@ export const CartProvider = ({ children }) => {
   };
 
   return (
-    <CartContext.Provider value={{ cart, branchId, addToCart, removeFromCart, clearCart, getCartTotal, setBranch }}>
+    <CartContext.Provider value={{ cart, branchId, addToCart, removeFromCart, clearCart, getCartTotal, setBranch, updateCartQuantity }}>
       {children}
     </CartContext.Provider>
   );

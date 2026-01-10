@@ -25,7 +25,8 @@ const getMpesaAccessToken = async () => {
         );
         return response.data.access_token;
     } catch (error) {
-        console.error('Error getting Mpesa access token:', error.response ? error.response.data : error.message);
+        // Sanitize error logging - do not log error.response.data which could contain sensitive info
+        console.error('Error getting Mpesa access token');
         throw new Error('Failed to get Mpesa access token');
     }
 };
@@ -142,13 +143,187 @@ exports.createOrder = async (req, res) => {
         if (error.response) {
             console.error('Daraja API Error Response:', error.response.data);
             return res.status(error.response.status || 500).json({
-                message: error.response.data.errorMessage || error.response.data.ResponseDescription || 'M-Pesa API error',
-                details: error.response.data
+                message: error.response.data.errorMessage || error.response.data.ResponseDescription || 'M-Pesa API error'
             });
         }
 
         console.error('Error creating order or initiating STK Push:', error.message);
         res.status(500).json({ message: error.message || 'Server error creating order' });
+    } finally {
+        client.release();
+    }
+};
+
+exports.retryPayment = async (req, res) => {
+    let { orderId, phoneNumber } = req.body;
+    const user_id = req.user.id;
+
+    // Sanitize phone number
+    phoneNumber = phoneNumber.replace(/\+/g, '');
+    if (phoneNumber.startsWith('0')) {
+        phoneNumber = '254' + phoneNumber.slice(1);
+    } else if (phoneNumber.startsWith('7') || phoneNumber.startsWith('1')) {
+        phoneNumber = '254' + phoneNumber;
+    }
+
+    const client = await pool.connect();
+    try {
+        const orderResult = await client.query(
+            'SELECT * FROM orders WHERE id = $1 AND user_id = $2 AND payment_status != \'paid\'',
+            [orderId, user_id]
+        );
+
+        if (orderResult.rows.length === 0) {
+            return res.status(404).json({ message: 'Order not found or already paid' });
+        }
+
+        const order = orderResult.rows[0];
+
+        // Re-initiate STK Push
+        const accessToken = await getMpesaAccessToken();
+        const shortCode = process.env.DARAJA_SHORTCODE;
+        const passkey = process.env.DARAJA_PASSKEY;
+        const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -3);
+        const password = Buffer.from(`${shortCode}${passkey}${timestamp}`).toString('base64');
+        const amount = Math.ceil(parseFloat(order.total_amount));
+
+        const baseURL = process.env.DARAJA_BASE_URL.replace(/\/$/, '');
+        const stkPushResponse = await axios.post(
+            `${baseURL}/mpesa/stkpush/v1/processrequest`,
+            {
+                BusinessShortCode: shortCode,
+                Password: password,
+                Timestamp: timestamp,
+                TransactionType: 'CustomerPayBillOnline',
+                Amount: amount,
+                PartyA: phoneNumber,
+                PartyB: shortCode,
+                PhoneNumber: phoneNumber,
+                CallBackURL: process.env.DARAJA_CALLBACK_URL,
+                AccountReference: `DrinkSync-${order.branch_id}`,
+                TransactionDesc: `Retry Payment for Order ${order.id}`,
+            },
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+
+        if (stkPushResponse.data.ResponseCode === '0') {
+            await client.query(
+                'UPDATE orders SET checkout_request_id = $1, payment_status = \'pending\' WHERE id = $2',
+                [stkPushResponse.data.CheckoutRequestID, order.id]
+            );
+            res.status(200).json({
+                message: 'Payment re-initiated successfully',
+                checkoutRequestID: stkPushResponse.data.CheckoutRequestID
+            });
+        } else {
+            throw new Error(`STK Push failed: ${stkPushResponse.data.ResponseDescription}`);
+        }
+    } catch (error) {
+        console.error('Error retrying payment:', error.message);
+        
+        if (error.response) {
+            console.error('Daraja API Error Response (Retry):', error.response.data);
+            return res.status(error.response.status || 500).json({
+                message: error.response.data.errorMessage || error.response.data.ResponseDescription || 'M-Pesa API error during retry'
+            });
+        }
+
+        res.status(500).json({ message: error.message || 'Server error retrying payment' });
+    } finally {
+        client.release();
+    }
+};
+
+// Internal helper function for cancelling an order
+const performOrderCancellation = async (client, orderId, branchId) => {
+    // Get items to restore stock
+    const itemsResult = await client.query('SELECT * FROM order_items WHERE order_id = $1', [orderId]);
+    
+    for (const item of itemsResult.rows) {
+        await client.query(
+            'UPDATE inventory SET stock = stock + $1 WHERE branch_id = $2 AND drink_id = $3',
+            [item.quantity, branchId, item.drink_id]
+        );
+    }
+
+    await client.query('UPDATE orders SET payment_status = \'cancelled\' WHERE id = $1', [orderId]);
+};
+
+exports.autoCancelPendingOrders = async () => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Find orders pending for more than 5 minutes
+        const overdueOrdersResult = await client.query(
+            "SELECT id, branch_id FROM orders WHERE payment_status = 'pending' AND order_date < NOW() - INTERVAL '5 minutes'"
+        );
+
+        if (overdueOrdersResult.rows.length > 0) {
+            console.log(`[CRON] Found ${overdueOrdersResult.rows.length} overdue pending orders to cancel.`);
+            for (const order of overdueOrdersResult.rows) {
+                console.log(`[CRON] Auto-cancelling order ${order.id} due to timeout`);
+                await performOrderCancellation(client, order.id, order.branch_id);
+            }
+        }
+
+        await client.query('COMMIT');
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('[CRON] Error in auto-cancelling orders:', error);
+    } finally {
+        client.release();
+    }
+};
+
+exports.cancelOrder = async (req, res) => {
+    const { orderId } = req.body;
+    const user_id = req.user.id;
+
+    console.log(`Attempting to cancel order: ${orderId} for user: ${user_id}`);
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // First check if the order exists at all
+        const existenceCheck = await client.query('SELECT * FROM orders WHERE id = $1', [orderId]);
+        if (existenceCheck.rows.length === 0) {
+            console.log(`Order ${orderId} not found in database`);
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        const order = existenceCheck.rows[0];
+        console.log(`Order found: ID=${order.id}, UserID=${order.user_id}, Status=${order.payment_status}`);
+
+        if (order.user_id !== user_id) {
+            console.log(`User ${user_id} is not authorized to cancel order ${orderId} (Owned by ${order.user_id})`);
+            await client.query('ROLLBACK');
+            return res.status(403).json({ message: 'Not authorized to cancel this order' });
+        }
+
+        if (order.payment_status === 'paid') {
+            console.log(`Order ${orderId} cannot be cancelled because it is already paid`);
+            await client.query('ROLLBACK');
+            return res.status(400).json({ message: 'Paid orders cannot be cancelled' });
+        }
+
+        if (order.payment_status === 'cancelled') {
+            console.log(`Order ${orderId} is already cancelled`);
+            await client.query('ROLLBACK');
+            return res.status(400).json({ message: 'Order is already cancelled' });
+        }
+
+        await performOrderCancellation(client, order.id, order.branch_id);
+
+        await client.query('COMMIT');
+        console.log(`Order ${orderId} cancelled successfully and stock restored`);
+        res.status(200).json({ message: 'Order cancelled and stock restored' });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error cancelling order:', error);
+        res.status(500).json({ message: 'Server error cancelling order' });
     } finally {
         client.release();
     }
@@ -210,14 +385,39 @@ exports.verifyPayment = async (req, res) => {
 
 exports.getOrderHistory = async (req, res) => {
     const user_id = req.user.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const status = req.query.status || 'all';
+    const offset = (page - 1) * limit;
+
+    console.log(`[DEBUG] Fetching history: User=${user_id}, Status=${status}, Page=${page}`);
+
     const client = await pool.connect();
     try {
-        const ordersResult = await client.query(
-            'SELECT * FROM orders WHERE user_id = $1 ORDER BY order_date DESC',
-            [user_id]
-        );
+        let countQuery = 'SELECT COUNT(*) FROM orders WHERE user_id = $1';
+        let historyQuery = 'SELECT * FROM orders WHERE user_id = $1';
+        const queryParams = [user_id];
 
+        if (status !== 'all') {
+            countQuery += ' AND payment_status = $2';
+            historyQuery += ' AND payment_status = $2';
+            queryParams.push(status);
+        }
+
+        const finalLimitIdx = queryParams.length + 1;
+        const finalOffsetIdx = queryParams.length + 2;
+        historyQuery += ` ORDER BY order_date DESC LIMIT $${finalLimitIdx} OFFSET $${finalOffsetIdx}`;
+        const finalParams = [...queryParams, limit, offset];
+
+        console.log(`[DEBUG] SQL: ${historyQuery} | Params: ${JSON.stringify(finalParams)}`);
+
+        const countResult = await client.query(countQuery, queryParams);
+        const totalOrders = parseInt(countResult.rows[0].count);
+
+        const ordersResult = await client.query(historyQuery, finalParams);
         const orders = ordersResult.rows;
+
+        console.log(`[DEBUG] Found ${orders.length} orders (Total count: ${totalOrders})`);
 
         for (let i = 0; i < orders.length; i++) {
             const orderItemsResult = await client.query(
@@ -227,9 +427,22 @@ exports.getOrderHistory = async (req, res) => {
             orders[i].items = orderItemsResult.rows;
         }
 
-        res.status(200).json(orders);
+        // Prevent browser caching
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+
+        res.status(200).json({
+            orders,
+            pagination: {
+                totalOrders,
+                currentPage: page,
+                totalPages: Math.ceil(totalOrders / limit),
+                hasNextPage: offset + orders.length < totalOrders
+            }
+        });
     } catch (error) {
-        console.error('Error fetching order history:', error);
+        console.error('[ERROR] getOrderHistory:', error);
         res.status(500).json({ message: 'Server error fetching order history' });
     } finally {
         client.release();

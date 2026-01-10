@@ -12,6 +12,7 @@ CREATE TABLE users (
 
 -- Insert admin user with name and email
 INSERT INTO users (name, email, password, role) VALUES ('Admin User', 'admin@drinksync.com', '$2b$10$8myCMZHx7bEEBs0CdpYM1uVAKn95EQA0UbdXUE68xoSX4TREvNJ0W', 'admin');
+INSERT INTO users (name, email, password, role) VALUES ('Super Admin', 'superadmin@drinksync.com', '$2b$10$8myCMZHx7bEEBs0CdpYM1uVAKn95EQA0UbdXUE68xoSX4TREvNJ0W', 'admin');
 
 -- Create Branches table
 CREATE TABLE branches (
@@ -39,9 +40,9 @@ CREATE TABLE drinks (
 
 -- Insert initial drink data
 INSERT INTO drinks (name, price, image) VALUES
-('Coke', 70.00, '/images/coke.jpg'),
-('Fanta', 70.00, '/images/Fanta-Orange.jpg'),
-('Sprite', 70.00, '/images/sprite.jpg');
+('Coke', 40.00, '/images/coke.jpg'),
+('Fanta', 40.00, '/images/Fanta-Orange.jpg'),
+('Sprite', 40.00, '/images/sprite.jpg');
 
 -- Create Inventory table
 CREATE TABLE inventory (
