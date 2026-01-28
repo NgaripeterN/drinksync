@@ -120,7 +120,7 @@ const About = () => {
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-sky-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-2xl shadow-sky-500/40 cursor-pointer"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-teal-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-2xl shadow-teal-500/40 cursor-pointer"
                 >
                   Join the Evolution
                   <ArrowRightIcon className="h-4 w-4 stroke-[3px]" />
@@ -147,7 +147,9 @@ const About = () => {
         <footer className={`py-12 px-4 border-t ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'}`}>
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-2">
-              <ArrowPathIcon className="h-6 w-6 text-sky-500" />
+              <div className="p-1.5 bg-teal-600 rounded-lg">
+                <ArrowPathIcon className="h-6 w-6 text-white" />
+              </div>
               <span className={`text-xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-gray-900'}`}>DRINKSYNC</span>
             </div>
             

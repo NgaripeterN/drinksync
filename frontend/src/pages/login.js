@@ -68,7 +68,7 @@ export default function Login() {
       >
         <div className="text-center space-y-4 mb-10">
           <Link href="/" className="inline-flex items-center gap-2 group mb-4">
-            <div className="p-2 bg-sky-600 rounded-xl shadow-lg shadow-sky-500/30 group-hover:rotate-180 transition-transform duration-700">
+            <div className="p-2 bg-teal-600 rounded-xl shadow-lg shadow-teal-500/30 group-hover:rotate-180 transition-transform duration-700">
               <ArrowPathIcon className="h-5 w-5 text-white" />
             </div>
             <span className={`text-xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -153,7 +153,7 @@ export default function Login() {
             whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-sky-600 hover:bg-sky-700 text-white font-black uppercase text-[10px] tracking-[0.2em] py-5 rounded-2xl shadow-xl shadow-sky-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-teal-600 hover:bg-teal-700 text-white font-black uppercase text-[10px] tracking-[0.2em] py-5 rounded-2xl shadow-xl shadow-teal-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <ArrowPathIcon className="h-4 w-4 animate-spin" />

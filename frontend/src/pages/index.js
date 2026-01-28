@@ -66,7 +66,7 @@ export default function Home() {
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 bg-sky-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-2xl shadow-sky-500/40 flex items-center justify-center gap-2 cursor-pointer"
+                  className="px-8 py-4 bg-teal-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-2xl shadow-teal-500/40 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   Start Ordering Now
                   <ArrowRightIcon className="h-4 w-4 stroke-[3px]" />
@@ -200,14 +200,14 @@ export default function Home() {
 
       {/* CTA Section */}
       <section className="px-4 pb-24 pt-12">
-        <div className={`max-w-7xl mx-auto rounded-[3rem] p-12 md:p-24 text-center relative overflow-hidden bg-sky-600 shadow-2xl shadow-sky-500/40`}>
+        <div className={`max-w-7xl mx-auto rounded-[3rem] p-12 md:p-24 text-center relative overflow-hidden bg-teal-600 shadow-2xl shadow-teal-500/40`}>
           <div className="relative z-10 space-y-8">
             <h2 className="text-4xl md:text-6xl font-black text-white leading-tight">Ready to quench <br/>your thirst?</h2>
             <Link href="/register">
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="inline-block px-12 py-5 bg-white text-sky-600 rounded-2xl font-black uppercase text-xs tracking-[0.3em] shadow-xl cursor-pointer"
+                className="inline-block px-12 py-5 bg-white text-teal-600 rounded-2xl font-black uppercase text-xs tracking-[0.3em] shadow-xl cursor-pointer"
               >
                 Join DrinkSync Today
               </motion.div>
@@ -224,7 +224,9 @@ export default function Home() {
       <footer className={`py-12 px-4 border-t ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'}`}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-2">
-            <ArrowPathIcon className="h-6 w-6 text-sky-500" />
+            <div className="p-1.5 bg-teal-600 rounded-lg">
+              <ArrowPathIcon className="h-6 w-6 text-white" />
+            </div>
             <span className={`text-xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-gray-900'}`}>DRINKSYNC</span>
           </div>
           
