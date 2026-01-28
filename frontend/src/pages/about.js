@@ -34,8 +34,8 @@ const About = () => {
     <div className={`relative min-h-screen overflow-hidden ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
       {/* Abstract Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-[10%] -left-[5%] w-[30%] h-[30%] bg-indigo-500/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[20%] -right-[5%] w-[40%] h-[40%] bg-emerald-500/10 rounded-full blur-[100px]" />
+        <div className="absolute top-[10%] -left-[5%] w-[30%] h-[30%] bg-sky-500/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[20%] -right-[5%] w-[40%] h-[40%] bg-teal-500/10 rounded-full blur-[100px]" />
       </div>
 
       <div className="relative z-10">
@@ -44,7 +44,7 @@ const About = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-[0.3em]"
+            className="inline-flex items-center px-4 py-2 rounded-full bg-sky-500/10 text-sky-500 text-[10px] font-black uppercase tracking-[0.3em]"
           >
             <SparklesIcon className="h-4 w-4 mr-2" />
             Our Mission & Vision
@@ -56,7 +56,7 @@ const About = () => {
             className={`text-5xl md:text-7xl font-black leading-tight tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}
           >
             Redefining <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-emerald-500">Fast Access.</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-green-500">Fast Access.</span>
           </motion.h1>
 
           <motion.p 
@@ -73,19 +73,19 @@ const About = () => {
         <section className="py-20 px-4 max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <AboutCard 
-              icon={<CpuChipIcon className="h-8 w-8 text-indigo-500" />}
+              icon={<CpuChipIcon className="h-8 w-8 text-sky-500" />}
               title="Integrated Tech"
               desc="Our proprietary sync engine ensures every branch inventory is accurate to the second."
               isDark={isDark}
             />
             <AboutCard 
-              icon={<UserGroupIcon className="h-8 w-8 text-emerald-500" />}
+              icon={<UserGroupIcon className="h-8 w-8 text-teal-500" />}
               title="Community First"
               desc="Building stronger connections between local beverage branches and the customers they serve."
               isDark={isDark}
             />
             <AboutCard 
-              icon={<GlobeAltIcon className="h-8 w-8 text-amber-500" />}
+              icon={<GlobeAltIcon className="h-8 w-8 text-slate-500" />}
               title="Scalable Logistics"
               desc="A platform built to grow from local neighborhoods to nationwide synchronized distribution."
               isDark={isDark}
@@ -110,7 +110,7 @@ const About = () => {
                   "Transparent transaction history for all users."
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <CheckBadgeIcon className="h-6 w-6 text-emerald-500 flex-shrink-0" />
+                    <CheckBadgeIcon className="h-6 w-6 text-teal-500 flex-shrink-0" />
                     <span className={`font-bold ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>{item}</span>
                   </div>
                 ))}
@@ -120,7 +120,7 @@ const About = () => {
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-2xl shadow-indigo-500/40 cursor-pointer"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-sky-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-2xl shadow-sky-500/40 cursor-pointer"
                 >
                   Join the Evolution
                   <ArrowRightIcon className="h-4 w-4 stroke-[3px]" />
@@ -129,9 +129,9 @@ const About = () => {
             </div>
 
             <div className="relative">
-              <div className={`absolute inset-0 bg-indigo-500/20 rounded-[3rem] blur-3xl`} />
+              <div className={`absolute inset-0 bg-sky-500/20 rounded-[3rem] blur-3xl`} />
               <div className={`relative p-8 rounded-[3rem] border-2 overflow-hidden ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100 shadow-xl'}`}>
-                <div className="aspect-video bg-gradient-to-br from-indigo-500 to-emerald-500 rounded-2xl mb-8 flex items-center justify-center overflow-hidden">
+                <div className="aspect-video bg-gradient-to-br from-sky-500 to-teal-500 rounded-2xl mb-8 flex items-center justify-center overflow-hidden">
                    <LightBulbIcon className="h-24 w-24 text-white/20 animate-pulse" />
                 </div>
                 <h3 className={`text-2xl font-black mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>Driven by Innovation</h3>
@@ -147,7 +147,7 @@ const About = () => {
         <footer className={`py-12 px-4 border-t ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'}`}>
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-2">
-              <ArrowPathIcon className="h-6 w-6 text-indigo-500" />
+              <ArrowPathIcon className="h-6 w-6 text-sky-500" />
               <span className={`text-xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-gray-900'}`}>DRINKSYNC</span>
             </div>
             
@@ -156,9 +156,9 @@ const About = () => {
             </div>
 
             <div className="flex gap-6">
-              <Link href="/" className={`text-[10px] font-black uppercase tracking-widest hover:text-indigo-500 transition-colors ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Home</Link>
-              <Link href="/dashboard" className={`text-[10px] font-black uppercase tracking-widest hover:text-indigo-500 transition-colors ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Dashboard</Link>
-              <Link href="/login" className={`text-[10px] font-black uppercase tracking-widest hover:text-indigo-500 transition-colors ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Login</Link>
+              <Link href="/" className={`text-[10px] font-black uppercase tracking-widest hover:text-sky-500 transition-colors ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Home</Link>
+              <Link href="/dashboard" className={`text-[10px] font-black uppercase tracking-widest hover:text-sky-500 transition-colors ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Dashboard</Link>
+              <Link href="/login" className={`text-[10px] font-black uppercase tracking-widest hover:text-sky-500 transition-colors ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Login</Link>
             </div>
           </div>
         </footer>
@@ -172,10 +172,10 @@ function AboutCard({ icon, title, desc, isDark }) {
     <motion.div 
       whileHover={{ y: -10 }}
       className={`p-10 rounded-[2.5rem] border-2 transition-all ${
-        isDark ? 'bg-gray-800 border-gray-700/50 hover:border-indigo-500/50 shadow-indigo-500/5' : 'bg-white border-gray-100 hover:border-indigo-500/20 shadow-sm shadow-indigo-500/5'
+        isDark ? 'bg-gray-800 border-gray-700/50 hover:border-sky-500/50 shadow-sky-500/5' : 'bg-white border-gray-100 hover:border-sky-500/20 shadow-sm shadow-sky-500/5'
       }`}
     >
-      <div className="p-4 bg-indigo-500/10 rounded-2xl inline-block mb-6">
+      <div className="p-4 bg-sky-500/10 rounded-2xl inline-block mb-6">
         {icon}
       </div>
       <h3 className={`text-xl font-black mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>{title}</h3>

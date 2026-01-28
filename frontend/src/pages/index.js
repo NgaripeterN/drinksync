@@ -54,7 +54,7 @@ export default function Home() {
             
             <h1 className={`text-5xl md:text-7xl font-black leading-[1.1] tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
               Refreshment, <br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-teal-500">Synchronized.</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-green-500">Synchronized.</span>
             </h1>
             
             <p className={`text-lg md:text-xl font-medium max-w-lg leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
