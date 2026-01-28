@@ -56,7 +56,7 @@ const About = () => {
             className={`text-5xl md:text-7xl font-black leading-tight tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}
           >
             Redefining <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-green-500">Fast Access.</span>
+            <span className="text-green-500">Fast Access.</span>
           </motion.h1>
 
           <motion.p 
