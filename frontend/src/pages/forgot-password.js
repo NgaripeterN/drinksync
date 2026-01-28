@@ -47,7 +47,7 @@ export default function ForgotPassword() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`w-full rounded-lg border pl-10 pr-3 py-2 focus:outline-none focus:ring-2 transition ${isDark ? 'bg-gray-800/70 border-gray-700 text-gray-200 focus:ring-indigo-400' : 'bg-gray-200/70 border-gray-300 text-gray-800 focus:ring-indigo-500'}`}
+                className={`w-full rounded-lg border pl-10 pr-3 py-2 focus:outline-none focus:ring-2 transition ${isDark ? 'bg-gray-800/70 border-gray-700 text-gray-200 focus:ring-sky-400' : 'bg-gray-200/70 border-gray-300 text-gray-800 focus:ring-sky-500'}`}
                 required
               />
             </div>
@@ -60,7 +60,7 @@ export default function ForgotPassword() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             type="submit"
-            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2.5 rounded-lg transition"
+            className="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 rounded-lg transition"
           >
             Send Reset Link
           </motion.button>
@@ -68,7 +68,7 @@ export default function ForgotPassword() {
 
         <p className={`text-center text-sm mt-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
           Remember your password?{" "}
-          <button onClick={() => router.push('/login')} className={`${isDark ? 'text-indigo-300 hover:text-indigo-400' : 'text-indigo-500 hover:text-indigo-600'}`}>
+          <button onClick={() => router.push('/login')} className={`${isDark ? 'text-sky-300 hover:text-sky-400' : 'text-sky-500 hover:text-sky-600'}`}>
             Log in
           </button>
         </p>

@@ -54,8 +54,8 @@ export default function Login() {
     <div className={`relative min-h-screen flex items-center justify-center px-4 overflow-hidden ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
       {/* Abstract Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] -left-[10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] -right-[10%] w-[40%] h-[40%] bg-emerald-500/10 rounded-full blur-[120px]" />
+        <div className="absolute top-[-10%] -left-[10%] w-[40%] h-[40%] bg-sky-500/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] -right-[10%] w-[40%] h-[40%] bg-teal-500/10 rounded-full blur-[120px]" />
       </div>
 
       <motion.div
@@ -63,12 +63,12 @@ export default function Login() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className={`relative w-full max-w-md p-10 rounded-[3rem] shadow-2xl border transition-all ${
-          isDark ? 'bg-gray-800/50 border-white/5 backdrop-blur-2xl shadow-indigo-500/10' : 'bg-white border-gray-100 shadow-xl'
+          isDark ? 'bg-gray-800/50 border-white/5 backdrop-blur-2xl shadow-sky-500/10' : 'bg-white border-gray-100 shadow-xl'
         }`}
       >
         <div className="text-center space-y-4 mb-10">
           <Link href="/" className="inline-flex items-center gap-2 group mb-4">
-            <div className="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-500/30 group-hover:rotate-180 transition-transform duration-700">
+            <div className="p-2 bg-sky-600 rounded-xl shadow-lg shadow-sky-500/30 group-hover:rotate-180 transition-transform duration-700">
               <ArrowPathIcon className="h-5 w-5 text-white" />
             </div>
             <span className={`text-xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -89,15 +89,15 @@ export default function Login() {
               Email Address
             </label>
             <div className="relative group">
-              <EnvelopeIcon className={`absolute top-1/2 left-4 -translate-y-1/2 h-5 w-5 transition-colors ${isDark ? 'text-gray-500 group-focus-within:text-indigo-400' : 'text-gray-400 group-focus-within:text-indigo-500'}`} />
+              <EnvelopeIcon className={`absolute top-1/2 left-4 -translate-y-1/2 h-5 w-5 transition-colors ${isDark ? 'text-gray-500 group-focus-within:text-sky-400' : 'text-gray-400 group-focus-within:text-sky-500'}`} />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={`w-full rounded-2xl border-2 pl-12 pr-4 py-4 text-sm font-bold outline-none transition-all ${
                   isDark 
-                    ? 'bg-gray-900/50 border-white/5 text-white focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10' 
-                    : 'bg-gray-50 border-gray-50 text-gray-900 focus:bg-white focus:border-indigo-500/20 focus:ring-4 focus:ring-indigo-500/5'
+                    ? 'bg-gray-900/50 border-white/5 text-white focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10' 
+                    : 'bg-gray-50 border-gray-50 text-gray-900 focus:bg-white focus:border-sky-500/20 focus:ring-4 focus:ring-sky-500/5'
                 }`}
                 placeholder="name@company.com"
                 required
@@ -110,20 +110,20 @@ export default function Login() {
               <label className={`block text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                 Password
               </label>
-              <Link href="/forgot-password" size="sm" className="text-[10px] font-black uppercase tracking-widest text-indigo-500 hover:text-indigo-400 transition-colors">
+              <Link href="/forgot-password" size="sm" className="text-[10px] font-black uppercase tracking-widest text-sky-500 hover:text-sky-400 transition-colors">
                 Forgot?
               </Link>
             </div>
             <div className="relative group">
-              <LockClosedIcon className={`absolute top-1/2 left-4 -translate-y-1/2 h-5 w-5 transition-colors ${isDark ? 'text-gray-500 group-focus-within:text-indigo-400' : 'text-gray-400 group-focus-within:text-indigo-500'}`} />
+              <LockClosedIcon className={`absolute top-1/2 left-4 -translate-y-1/2 h-5 w-5 transition-colors ${isDark ? 'text-gray-500 group-focus-within:text-sky-400' : 'text-gray-400 group-focus-within:text-sky-500'}`} />
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={`w-full rounded-2xl border-2 pl-12 pr-12 py-4 text-sm font-bold outline-none transition-all ${
                   isDark 
-                    ? 'bg-gray-900/50 border-white/5 text-white focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10' 
-                    : 'bg-gray-50 border-gray-50 text-gray-900 focus:bg-white focus:border-indigo-500/20 focus:ring-4 focus:ring-indigo-500/5'
+                    ? 'bg-gray-900/50 border-white/5 text-white focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/10' 
+                    : 'bg-gray-50 border-gray-50 text-gray-900 focus:bg-white focus:border-sky-500/20 focus:ring-4 focus:ring-sky-500/5'
                 }`}
                 placeholder="••••••••"
                 required
@@ -131,7 +131,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute top-1/2 right-4 -translate-y-1/2 text-gray-500 hover:text-indigo-500 transition-colors"
+                className="absolute top-1/2 right-4 -translate-y-1/2 text-gray-500 hover:text-sky-500 transition-colors"
               >
                 {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
               </button>
@@ -153,7 +153,7 @@ export default function Login() {
             whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase text-[10px] tracking-[0.2em] py-5 rounded-2xl shadow-xl shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-sky-600 hover:bg-sky-700 text-white font-black uppercase text-[10px] tracking-[0.2em] py-5 rounded-2xl shadow-xl shadow-sky-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <ArrowPathIcon className="h-4 w-4 animate-spin" />
@@ -168,7 +168,7 @@ export default function Login() {
 
         <p className={`text-center text-[10px] font-black uppercase tracking-[0.1em] mt-10 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
           New to DrinkSync?{" "}
-          <Link href="/register" className="text-indigo-500 hover:text-indigo-400 transition-colors ml-1">
+          <Link href="/register" className="text-sky-500 hover:text-sky-400 transition-colors ml-1">
             Create an Account
           </Link>
         </p>
