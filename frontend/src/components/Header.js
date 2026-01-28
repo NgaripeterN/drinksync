@@ -21,7 +21,7 @@ const Header = () => {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-500/30 group-hover:rotate-180 transition-transform duration-700">
+          <div className="p-2 bg-teal-600 rounded-xl shadow-lg shadow-teal-500/30 group-hover:rotate-180 transition-transform duration-700">
             <ArrowPathIcon className="h-5 w-5 text-white" />
           </div>
           <span className={`text-xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -41,7 +41,7 @@ const Header = () => {
             className={`p-2.5 rounded-xl border transition-all ${
               isDark 
                 ? 'bg-gray-800 border-gray-700 text-yellow-400 hover:bg-gray-700' 
-                : 'bg-gray-50 border-gray-200 text-indigo-600 hover:bg-gray-100'
+                : 'bg-gray-50 border-gray-200 text-teal-600 hover:bg-gray-100'
             }`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -57,7 +57,7 @@ const Header = () => {
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-5 py-2.5 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-500/20 cursor-pointer"
+              className="px-5 py-2.5 bg-teal-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-teal-500/20 cursor-pointer"
             >
               Login
             </motion.div>
@@ -73,7 +73,7 @@ function NavLink({ href, label, isDark }) {
     <Link 
       href={href} 
       className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${
-        isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-indigo-600'
+        isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-teal-600'
       }`}
     >
       {label}
@@ -82,4 +82,3 @@ function NavLink({ href, label, isDark }) {
 }
 
 export default Header;
-
