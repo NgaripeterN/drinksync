@@ -33,7 +33,9 @@ export default function Register() {
   const validate = () => {
     const newErrors = {};
     // Name validation
-    if (!name.trim()) newErrors.name = "Full name is required.";
+    if (!name.trim() || name.length > 50) {
+      newErrors.name = "Full name must be between 1 and 50 characters.";
+    }
 
     // Email validation
     if (!email) {

@@ -24,6 +24,11 @@ const disposableEmailDomains = [
 exports.register = async (req, res) => {
     const { name, email, password, role } = req.body;
 
+    // 0. Name Validation
+    if (!name || name.trim().length < 1 || name.length > 50) {
+        return res.status(400).json({ message: 'Full name must be between 1 and 50 characters.' });
+    }
+
     // 1. Email Validation
     if (!validator.isEmail(email)) {
         return res.status(400).json({ message: 'Please enter a valid email address.' });
@@ -105,6 +110,10 @@ exports.updateProfile = async (req, res) => {
         let queryIndex = 1;
 
         if (name) {
+            // Name Validation
+            if (name.trim().length < 1 || name.length > 50) {
+                return res.status(400).json({ message: 'Full name must be between 1 and 50 characters.' });
+            }
             fields.push(`name = $${queryIndex++}`);
             // Sanitize name input to prevent XSS
             values.push(validator.escape(name));
