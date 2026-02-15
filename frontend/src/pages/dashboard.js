@@ -149,7 +149,7 @@ export default function Dashboard() {
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
             <div className="space-y-4 max-w-xl">
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-[0.2em]">
-                <SparklesIcon className="h-3 w-3 mr-1.5" />
+                <BuildingOfficeIcon className="h-3 w-3 mr-1.5" />
                 Premium Beverage Network
               </div>
               <h1 className={`text-4xl md:text-5xl font-black tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
