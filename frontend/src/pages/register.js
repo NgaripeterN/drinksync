@@ -9,7 +9,8 @@ import {
   EyeIcon, 
   EyeSlashIcon,
   ArrowPathIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
+  ExclamationCircleIcon
 } from "@heroicons/react/24/outline";
 import { useTheme } from '../context/ThemeContext';
 import Link from 'next/link';
@@ -21,34 +22,65 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const router = useRouter();
   const { theme } = useTheme();
 
+  const validate = () => {
+    const newErrors = {};
+    // Name validation
+    if (!name.trim()) newErrors.name = "Full name is required.";
+
+    // Email validation
+    if (!email) {
+      newErrors.email = "Email is required.";
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = "Email address is invalid.";
+    }
+    
+    // Password validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{10,}$/;
+    if (!password) {
+      newErrors.password = "Password is required.";
+    } else if (!passwordRegex.test(password)) {
+      newErrors.password = "Password must be 10+ characters, with uppercase, lowercase, number, and special character.";
+    }
+
+    // Confirm password validation
+    if (password !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
-    setError(null);
+    setApiError(null);
     setSuccess(null);
-    setIsSubmitting(true);
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      setIsSubmitting(false);
+    if (!validate()) {
       return;
     }
+    
+    setIsSubmitting(true);
 
     try {
       await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`,
         { name, email, password, role: "customer" }
       );
-      setSuccess("Registration successful! Redirecting...");
-      setTimeout(() => router.push("/login"), 1500);
+      setSuccess("Registration successful! Redirecting to login...");
+      router.push("/login?from=register");
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed. Please try again.");
+      const message = err.response?.data?.message || "Registration failed. Please try again.";
+      setApiError(message);
+      setErrors({ form: message }); // Display server error at form level
     } finally {
       setIsSubmitting(false);
     }
@@ -58,7 +90,6 @@ export default function Register() {
 
   return (
     <div className={`relative min-h-screen flex items-center justify-center px-4 overflow-hidden ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
-      {/* Abstract Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] -left-[10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-10%] -right-[10%] w-[40%] h-[40%] bg-emerald-500/10 rounded-full blur-[120px]" />
@@ -89,7 +120,29 @@ export default function Register() {
           </p>
         </div>
 
-        <form onSubmit={handleRegister} className="space-y-6">
+        <form onSubmit={handleRegister} className="space-y-4">
+          {/* General API Error Message */}
+          {(apiError && !success) && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`p-4 rounded-xl border text-xs font-bold text-center bg-red-500/10 border-red-500/20 text-red-500`}
+            >
+              {apiError}
+            </motion.div>
+          )}
+          {/* Success Message */}
+          {success && (
+             <motion.div 
+             initial={{ opacity: 0, y: -10 }}
+             animate={{ opacity: 1, y: 0 }}
+             className={`p-4 rounded-xl border text-xs font-bold text-center bg-emerald-500/10 border-emerald-500/20 text-emerald-500`}
+           >
+             {success}
+           </motion.div>
+          )}
+
+          {/* Form Fields */}
           <div className="space-y-2">
             <label className={`block text-[10px] font-black uppercase tracking-[0.2em] ml-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
               Full Name
@@ -102,13 +155,13 @@ export default function Register() {
                 onChange={(e) => setName(e.target.value)}
                 className={`w-full rounded-2xl border-2 pl-12 pr-4 py-4 text-sm font-bold outline-none transition-all ${
                   isDark 
-                    ? 'bg-gray-900/50 border-white/5 text-white focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10' 
-                    : 'bg-gray-50 border-gray-50 text-gray-900 focus:bg-white focus:border-indigo-500/20 focus:ring-4 focus:ring-indigo-500/5'
+                    ? `bg-gray-900/50 border-white/5 text-white focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 ${errors.name ? 'border-red-500/50' : ''}` 
+                    : `bg-gray-50 border-gray-50 text-gray-900 focus:bg-white focus:border-indigo-500/20 focus:ring-4 focus:ring-indigo-500/5 ${errors.name ? 'border-red-500/30' : ''}`
                 }`}
                 placeholder="John Doe"
-                required
               />
             </div>
+            {errors.name && <p className="text-xs text-red-500 font-bold ml-2 mt-1 flex items-center gap-1"><ExclamationCircleIcon className="h-4 w-4" />{errors.name}</p>}
           </div>
 
           <div className="space-y-2">
@@ -123,13 +176,13 @@ export default function Register() {
                 onChange={(e) => setEmail(e.target.value)}
                 className={`w-full rounded-2xl border-2 pl-12 pr-4 py-4 text-sm font-bold outline-none transition-all ${
                   isDark 
-                    ? 'bg-gray-900/50 border-white/5 text-white focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10' 
-                    : 'bg-gray-50 border-gray-50 text-gray-900 focus:bg-white focus:border-indigo-500/20 focus:ring-4 focus:ring-indigo-500/5'
+                    ? `bg-gray-900/50 border-white/5 text-white focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 ${errors.email ? 'border-red-500/50' : ''}` 
+                    : `bg-gray-50 border-gray-50 text-gray-900 focus:bg-white focus:border-indigo-500/20 focus:ring-4 focus:ring-indigo-500/5 ${errors.email ? 'border-red-500/30' : ''}`
                 }`}
                 placeholder="name@company.com"
-                required
               />
             </div>
+            {errors.email && <p className="text-xs text-red-500 font-bold ml-2 mt-1 flex items-center gap-1"><ExclamationCircleIcon className="h-4 w-4" />{errors.email}</p>}
           </div>
 
           <div className="space-y-2">
@@ -144,11 +197,10 @@ export default function Register() {
                 onChange={(e) => setPassword(e.target.value)}
                 className={`w-full rounded-2xl border-2 pl-12 pr-12 py-4 text-sm font-bold outline-none transition-all ${
                   isDark 
-                    ? 'bg-gray-900/50 border-white/5 text-white focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10' 
-                    : 'bg-gray-50 border-gray-50 text-gray-900 focus:bg-white focus:border-indigo-500/20 focus:ring-4 focus:ring-indigo-500/5'
+                    ? `bg-gray-900/50 border-white/5 text-white focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 ${errors.password ? 'border-red-500/50' : ''}` 
+                    : `bg-gray-50 border-gray-50 text-gray-900 focus:bg-white focus:border-indigo-500/20 focus:ring-4 focus:ring-indigo-500/5 ${errors.password ? 'border-red-500/30' : ''}`
                 }`}
                 placeholder="••••••••"
-                required
               />
               <button
                 type="button"
@@ -158,6 +210,7 @@ export default function Register() {
                 {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
               </button>
             </div>
+            {errors.password && <p className="text-xs text-red-500 font-bold ml-2 mt-1 flex items-center gap-1"><ExclamationCircleIcon className="h-4 w-4" />{errors.password}</p>}
           </div>
 
           <div className="space-y-2">
@@ -172,11 +225,10 @@ export default function Register() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className={`w-full rounded-2xl border-2 pl-12 pr-12 py-4 text-sm font-bold outline-none transition-all ${
                   isDark 
-                    ? 'bg-gray-900/50 border-white/5 text-white focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10' 
-                    : 'bg-gray-50 border-gray-50 text-gray-900 focus:bg-white focus:border-indigo-500/20 focus:ring-4 focus:ring-indigo-500/5'
+                    ? `bg-gray-900/50 border-white/5 text-white focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 ${errors.confirmPassword ? 'border-red-500/50' : ''}` 
+                    : `bg-gray-50 border-gray-50 text-gray-900 focus:bg-white focus:border-indigo-500/20 focus:ring-4 focus:ring-indigo-500/5 ${errors.confirmPassword ? 'border-red-500/30' : ''}`
                 }`}
                 placeholder="••••••••"
-                required
               />
               <button
                 type="button"
@@ -186,21 +238,8 @@ export default function Register() {
                 {showConfirmPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
               </button>
             </div>
+            {errors.confirmPassword && <p className="text-xs text-red-500 font-bold ml-2 mt-1 flex items-center gap-1"><ExclamationCircleIcon className="h-4 w-4" />{errors.confirmPassword}</p>}
           </div>
-
-          {(error || success) && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`p-4 rounded-xl border text-xs font-bold text-center ${
-                error 
-                  ? 'bg-red-500/10 border-red-500/20 text-red-500' 
-                  : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'
-              }`}
-            >
-              {error || success}
-            </motion.div>
-          )}
 
           <motion.button
             whileHover={{ scale: 1.02 }}

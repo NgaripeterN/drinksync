@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import axios from "axios";
@@ -8,7 +8,8 @@ import {
   EyeIcon, 
   EyeSlashIcon,
   ArrowPathIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
+  CheckCircleIcon
 } from "@heroicons/react/24/outline";
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -20,9 +21,17 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  
   const router = useRouter();
   const { theme } = useTheme();
   const { login } = useAuth();
+
+  useEffect(() => {
+    if (router.query.from === "register") {
+      setShowSuccessMessage(true);
+    }
+  }, [router.query]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -52,7 +61,6 @@ export default function Login() {
 
   return (
     <div className={`relative min-h-screen flex items-center justify-center px-4 overflow-hidden ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
-      {/* Abstract Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] -left-[10%] w-[40%] h-[40%] bg-sky-500/10 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-10%] -right-[10%] w-[40%] h-[40%] bg-teal-500/10 rounded-full blur-[120px]" />
@@ -76,12 +84,23 @@ export default function Login() {
             </span>
           </Link>
           <h2 className={`text-3xl font-black tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            Welcome Back
+            {showSuccessMessage ? "Account Created!" : "Welcome Back"}
           </h2>
           <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-            Please enter your details to sign in.
+            {showSuccessMessage ? "Please sign in to continue." : "Please enter your details to sign in."}
           </p>
         </div>
+
+        {showSuccessMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 mb-6 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold text-center flex items-center justify-center gap-2"
+          >
+            <CheckCircleIcon className="h-5 w-5" />
+            <span>Registration successful!</span>
+          </motion.div>
+        )}
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-2">
